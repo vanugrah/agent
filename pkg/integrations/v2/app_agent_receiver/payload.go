@@ -303,7 +303,7 @@ type Meta struct {
 	Page    Page    `json:"page,omitempty"`
 	Browser Browser `json:"browser,omitempty"`
 	View    View    `json:"view,omitempty"`
-	GeoIP   GeoIP   `json:"geo_ip,omitempty"`
+	Geo     Geo     `json:"geo,omitempty"`
 }
 
 // KeyVal produces key->value representation of the app event metadata
@@ -316,6 +316,7 @@ func (m Meta) KeyVal() *KeyVal {
 	MergeKeyValWithPrefix(kv, m.Page.KeyVal(), "page_")
 	MergeKeyValWithPrefix(kv, m.Browser.KeyVal(), "browser_")
 	MergeKeyValWithPrefix(kv, m.View.KeyVal(), "view_")
+	MergeKeyValWithPrefix(kv, m.Geo.KeyVal(), "geo_")
 	return kv
 }
 
@@ -419,9 +420,9 @@ func (v View) KeyVal() *KeyVal {
 	return kv
 }
 
-// GeoIP holds metadata about geolocation of incoming requests
+// Geo holds metadata about geolocation of incoming requests
 // TODO: Create placeholder for all geolocation fields
-type GeoIP struct {
+type Geo struct {
 	ClientIP        net.IP  `json:"client_ip,omitempty"`
 	LocationLat     float64 `json:"location_latitude,omitempty"`
 	LocationLong    float64 `json:"location_longitude,omitempty"`
@@ -435,7 +436,7 @@ type GeoIP struct {
 	SubdivisionCode string  `json:"subdivision_code,omitempty"`
 }
 
-func (v GeoIP) KeyVal() *KeyVal {
+func (v Geo) KeyVal() *KeyVal {
 	kv := NewKeyVal()
 	KeyValAdd(kv, "client_ip", v.ClientIP.String())
 	KeyValAdd(kv, "location_latitude", fmt.Sprintf("%f", v.LocationLat))

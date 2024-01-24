@@ -74,7 +74,9 @@ func (le *LogsExporter) Export(ctx context.Context, payload Payload) error {
 	}
 
 	transformedMeta := le.geoIPProvider.TransformMetas(&payload.Meta, clientIP)
+	level.Info(le.logger).Log("msg", "the transformed metas", "meta", fmt.Sprintf("%+v", transformedMeta))
 	meta := transformedMeta.KeyVal()
+	level.Info(le.logger).Log("msg", "the met keyval", "meta", fmt.Sprintf("%+v", meta))
 
 	// log events
 	for _, logItem := range payload.Logs {
