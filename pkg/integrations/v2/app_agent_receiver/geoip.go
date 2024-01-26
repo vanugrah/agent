@@ -134,7 +134,8 @@ func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
 	// 98.234.243.154
 	// 107.10.240.119
 	// 71.197.214.252
-	clientIP = net.ParseIP("71.197.214.252")
+	// 24.239.161.45
+	clientIP = net.ParseIP("24.239.161.45")
 
 	level.Info(gp.logger).Log("msg", "altered client ip is", "client_ip", clientIP.String())
 
