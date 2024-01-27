@@ -122,8 +122,8 @@ func (ar *AppAgentReceiverHandler) HTTPHandler(logger log.Logger) http.Handler {
 		handler = c.Handler(handler)
 	}
 
-	// TODO: If geoip is enabled, wrap the main handler to add client ip to the context
-	// Is this the right layer? Or do it in the middleware layer above it?
+	// If geoip is enabled, wrap the main handler to add client ip to the context
+	// TODO: Is this the right layer? Or do it in the middleware layer above it?
 	if ar.config.GeoIP.Enabled {
 		handler = addClientIPToContext(handler)
 	}

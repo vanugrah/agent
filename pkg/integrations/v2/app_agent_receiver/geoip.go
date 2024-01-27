@@ -130,15 +130,6 @@ func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
 	// TODO Validate IP is in the correct format. For example ::1, or 10.x.x.x ips.
 	level.Info(gp.logger).Log("msg", "original client ip was", "client_ip", clientIP.String())
 
-	// TODO: Hard coding this for testing purposes:
-	// 98.234.243.154
-	// 107.10.240.119
-	// 71.197.214.252
-	// 24.239.161.45
-	clientIP = net.ParseIP("24.239.161.45")
-
-	level.Info(gp.logger).Log("msg", "altered client ip is", "client_ip", clientIP.String())
-
 	// Query GeoIP db
 	geoIpCityRecord, err := gp.getGeoIPData(clientIP)
 	if err != nil {
@@ -152,8 +143,6 @@ func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
 		level.Error(gp.logger).Log("msg", "Error populating metas with geo IP data", "err", err)
 		return mt
 	}
-
-	// level.Info(gp.logger).Log("msg", "the transformed metas", "meta", fmt.Sprintf("%+v", transformedMeta))
 
 	return transformedMeta
 }
