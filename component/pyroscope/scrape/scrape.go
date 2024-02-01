@@ -33,9 +33,8 @@ const (
 
 func init() {
 	component.Register(component.Registration{
-		Name:          "pyroscope.scrape",
-		Args:          Arguments{},
-		NeedsServices: []string{cluster.ServiceName},
+		Name: "pyroscope.scrape",
+		Args: Arguments{},
 
 		Build: func(opts component.Options, args component.Arguments) (component.Component, error) {
 			return New(opts, args.(Arguments))
@@ -81,7 +80,7 @@ type Arguments struct {
 
 	ProfilingConfig ProfilingConfig `river:"profiling_config,block,optional"`
 
-	Clustering scrape.Clustering `river:"clustering,block,optional"`
+	Clustering cluster.ComponentBlock `river:"clustering,block,optional"`
 }
 
 type ProfilingConfig struct {

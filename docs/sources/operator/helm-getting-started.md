@@ -3,9 +3,10 @@ aliases:
 - /docs/grafana-cloud/agent/operator/helm-getting-started/
 - /docs/grafana-cloud/monitor-infrastructure/agent/operator/helm-getting-started/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/operator/helm-getting-started/
+- /docs/grafana-cloud/send-data/agent/operator/helm-getting-started/
 canonical: https://grafana.com/docs/agent/latest/operator/helm-getting-started/
-title: Install the Operator with Helm
 description: Learn how to install the Operator with Helm charts
+title: Install the Operator with Helm
 weight: 100
 ---
 # Install the Operator with Helm
@@ -19,14 +20,14 @@ In this guide, you'll learn how to deploy [Grafana Agent Operator]({{< relref ".
 To deploy Agent Operator with Helm, make sure that you have the following:
 
 - A Kubernetes cluster
-- The `[kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)` command-line client installed and configured on your machine
-- The `[helm](https://helm.sh/docs/intro/install/)` command-line client installed and configured on your machine
+- The [`kubectl`](https://kubernetes.io/docs/tasks/tools/#kubectl) command-line client installed and configured on your machine
+- The [`helm`](https://helm.sh/docs/intro/install/) command-line client installed and configured on your machine
 
 > **Note:** Agent Operator is currently in beta and its custom resources are subject to change.
 
 ## Install the Agent Operator Helm Chart
 
-In this section, you'll install the [grafana-agent-operator Helm chart](https://github.com/grafana/helm-charts/tree/main/charts/agent-operator) into your Kubernetes cluster. This will install the latest version of Agent Operator and its [Custom Resource Definitions](https://github.com/grafana/agent/tree/main/production/operator/crds) (CRDs). The chart configures Operator to maintain a Service that lets you scrape kubelets using a `ServiceMonitor`.
+In this section, you'll install the [grafana-agent-operator Helm chart](https://github.com/grafana/helm-charts/tree/main/charts/agent-operator) into your Kubernetes cluster. This will install the latest version of Agent Operator and its [Custom Resource Definitions](https://github.com/grafana/agent/tree/main/operations/agent-static-operator/crds) (CRDs). The chart configures Operator to maintain a Service that lets you scrape kubelets using a `ServiceMonitor`.
 
 To install the Agent Operator Helm chart:
 

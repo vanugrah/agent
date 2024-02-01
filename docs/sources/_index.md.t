@@ -3,6 +3,7 @@ aliases:
 - /docs/grafana-cloud/agent/
 - /docs/grafana-cloud/monitor-infrastructure/agent/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/
+- /docs/grafana-cloud/send-data/agent/
 canonical: https://grafana.com/docs/agent/latest/
 title: Grafana Agent
 description: Grafana Agent is a flexible, performant, vendor-neutral, telemetry collector
@@ -23,11 +24,11 @@ Grafana Agent is based around **components**. Components are wired together to
 form programmable observability **pipelines** for telemetry collection,
 processing, and delivery.
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 This page focuses mainly on [Flow mode](https://grafana.com/docs/agent/<AGENT_VERSION>/flow/), the Terraform-inspired variant of Grafana Agent.
 
 For information on other variants of Grafana Agent, refer to [Introduction to Grafana Agent]({{< relref "./about.md" >}}).
-{{% /admonition %}}
+{{< /admonition >}}
 
 Grafana Agent can collect, transform, and send data to:
 
@@ -76,7 +77,7 @@ Grafana Agent can collect, transform, and send data to:
 
 * Windows
 
-  * Minimum version: Windows Server 2012 or later, or Windows 10 or later.
+  * Minimum version: Windows Server 2016 or later, or Windows 10 or later.
   * Architectures: AMD64
 
 * macOS
@@ -101,21 +102,19 @@ one minor release is moved.
 
 Patch and security releases may be created at any time.
 
-[Milestones]: https://github.com/grafana/agent/milestones
-
 {{% docs/reference %}}
-[variants]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/about"
-[variants]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/monitor-infrastructure/agent/about"
+[variants]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/about"
+[variants]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/send-data/agent/about"
 
-[Static mode]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static"
-[Static mode]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/monitor-infrastructure/agent/static"
+[Static mode]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static"
+[Static mode]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/send-data/agent/static"
 
-[Static mode Kubernetes operator]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/operator"
-[Static mode Kubernetes operator]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/monitor-infrastructure/agent/operator"
+[Static mode Kubernetes operator]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/operator"
+[Static mode Kubernetes operator]: "/docs/grafana-cloud/ -> /docs/grafana-cloud/send-data/agent/operator"
 
-[Flow mode]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/flow"
-[Flow mode]: "/docs/grafana-cloud/ -> /docs/agent/<AGENT VERSION>/flow"
+[Flow mode]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/flow"
+[Flow mode]: "/docs/grafana-cloud/ -> /docs/agent/<AGENT_VERSION>/flow"
 
-[UI]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/flow/monitoring/debugging.md#grafana-agent-flow-ui"
-[UI]: "/docs/grafana-cloud/ -> /docs/agent/<AGENT VERSION>/flow/monitoring/debugging.md#grafana-agent-flow-ui"
+[UI]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/flow/tasks/debug.md#grafana-agent-flow-ui"
+[UI]: "/docs/grafana-cloud/ -> /docs/agent/<AGENT_VERSION>/flow/tasks/debug.md#grafana-agent-flow-ui"
 {{% /docs/reference %}}

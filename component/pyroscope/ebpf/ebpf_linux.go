@@ -1,4 +1,4 @@
-//go:build linux
+//go:build (linux && arm64) || (linux && amd64)
 
 package ebpf
 
@@ -82,8 +82,8 @@ func defaultArguments() Arguments {
 		CacheRounds:          3,
 		CollectUserProfile:   true,
 		CollectKernelProfile: true,
-		TargetsOnly:          true,
 		Demangle:             "none",
+		PythonEnabled:        true,
 	}
 }
 
@@ -118,7 +118,7 @@ func (c *Component) Run(ctx context.Context) error {
 				return nil
 			case newArgs := <-c.argsUpdate:
 				c.args = newArgs
-				c.targetFinder.Update(targetsOptionFromArgs(c.args))
+				c.session.UpdateTargets(targetsOptionFromArgs(c.args))
 				c.metrics.targetsActive.Set(float64(len(c.targetFinder.DebugInfo())))
 				err := c.session.Update(convertSessionOptions(c.args, c.metrics))
 				if err != nil {
@@ -160,11 +160,15 @@ func (c *Component) collectProfiles() error {
 	c.metrics.profilingSessionsTotal.Inc()
 	level.Debug(c.options.Logger).Log("msg", "ebpf  collectProfiles")
 	args := c.args
-	builders := pprof.NewProfileBuilders(args.SampleRate)
-	err := c.session.CollectProfiles(func(target *sd.Target, stack []string, value uint64, pid uint32) {
+	builders := pprof.NewProfileBuilders(int64(args.SampleRate))
+	err := c.session.CollectProfiles(func(target *sd.Target, stack []string, value uint64, pid uint32, aggregation ebpfspy.SampleAggregation) {
 		labelsHash, labels := target.Labels()
 		builder := builders.BuilderForTarget(labelsHash, labels)
-		builder.AddSample(stack, value)
+		if aggregation == ebpfspy.SampleAggregated {
+			builder.CreateSample(stack, value)
+		} else {
+			builder.CreateSampleOrAddValue(stack, value)
+		}
 	})
 
 	if err != nil {
@@ -221,8 +225,7 @@ func targetsOptionFromArgs(args Arguments) sd.TargetsOptions {
 	}
 	return sd.TargetsOptions{
 		Targets:            targets,
-		DefaultTarget:      sd.DiscoveryTarget(args.DefaultTarget),
-		TargetsOnly:        args.TargetsOnly,
+		TargetsOnly:        true,
 		ContainerCacheSize: args.ContainerIDCacheSize,
 	}
 }
@@ -232,6 +235,8 @@ func convertSessionOptions(args Arguments, ms *metrics) ebpfspy.SessionOptions {
 		CollectUser:   args.CollectUserProfile,
 		CollectKernel: args.CollectKernelProfile,
 		SampleRate:    args.SampleRate,
+		PythonEnabled: args.PythonEnabled,
+		Metrics:       ms.ebpfMetrics,
 		CacheOptions: symtab.CacheOptions{
 			SymbolOptions: symtab.SymbolOptions{
 				GoTableFallback: false,
@@ -249,7 +254,6 @@ func convertSessionOptions(args Arguments, ms *metrics) ebpfspy.SessionOptions {
 				Size:       args.SameFileCacheSize,
 				KeepRounds: args.CacheRounds,
 			},
-			Metrics: ms.symtabMetrics,
 		},
 	}
 }

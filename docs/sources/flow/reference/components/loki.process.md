@@ -3,9 +3,10 @@ aliases:
 - /docs/grafana-cloud/agent/flow/reference/components/loki.process/
 - /docs/grafana-cloud/monitor-infrastructure/agent/flow/reference/components/loki.process/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/flow/reference/components/loki.process/
+- /docs/grafana-cloud/send-data/agent/flow/reference/components/loki.process/
 canonical: https://grafana.com/docs/agent/latest/flow/reference/components/loki.process/
-title: loki.process
 description: Learn about loki.process
+title: loki.process
 ---
 
 # loki.process
@@ -210,23 +211,32 @@ To drop entries with an OR clause, specify multiple `drop` blocks in sequence.
 
 The following arguments are supported:
 
-| Name                  | Type       | Description                                                                                                         | Default        | Required |
-| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- | -------------- | -------- |
-| `source`              | `string`   | Name from extracted data to parse. If empty or not defined, it uses the log message.                                | `""`           | no       |
-| `expression`          | `string`   | A valid RE2 regular expression.                                                                                     | `""`           | no       |
-| `value`               | `string`   | If both `source` and `value` are specified, the stage drops lines where `value` exactly matches the source content. | `""`           | no       |
-| `older_than`          | `duration` | If specified, the stage drops lines whose timestamp is older than the current time minus this duration.             | `""`           | no       |
-| `longer_than`         | `string`   | If specified, the stage drops lines whose size exceeds the configured value.                                        | `""`           | no       |
-| `drop_counter_reason` | `string`   | A custom reason to report for dropped lines.                                                                        | `"drop_stage"` | no       |
+| Name                  | Type       | Description                                                                                                            | Default        | Required |
+|-----------------------|------------|------------------------------------------------------------------------------------------------------------------------|----------------|----------|
+| `source`              | `string`   | Name or comma-separated list of names from extracted data to match. If empty or not defined, it uses the log message.  | `""`           | no       |
+| `separator`           | `string`   | When `source` is a comma-separated list of names, this separator is placed between concatenated extracted data values. | `";"`          | no       |
+| `expression`          | `string`   | A valid RE2 regular expression.                                                                                        | `""`           | no       |
+| `value`               | `string`   | If both `source` and `value` are specified, the stage drops lines where `value` exactly matches the source content.    | `""`           | no       |
+| `older_than`          | `duration` | If specified, the stage drops lines whose timestamp is older than the current time minus this duration.                | `""`           | no       |
+| `longer_than`         | `string`   | If specified, the stage drops lines whose size exceeds the configured value.                                           | `""`           | no       |
+| `drop_counter_reason` | `string`   | A custom reason to report for dropped lines.                                                                           | `"drop_stage"` | no       |
 
-The `expression` field needs to be a RE2 regex string. If `source` is empty or
-not provided, the regex attempts to match the log line itself. If source is
-provided, the regex attempts to match the corresponding value from the
-extracted map.
+The `expression` field must be a RE2 regex string.
+* If `source` is empty or not provided, the regex attempts to match the log 
+line itself. 
+* If `source` is a single name, the regex attempts to match the corresponding
+value from the extracted map. 
+* If `source` is a comma-separated list of names, the corresponding values from
+the extracted map are concatenated using `separator` and the regex attempts to
+match the concatenated string.
 
 The `value` field can only work with values from the extracted map, and must be
-specified together with `source`. Entries are dropped when there is an exact
-match between the two.
+specified together with `source`.
+* If `source` is a single name, the entries are dropped when there is an exact
+match between the corresponding value from the extracted map and the `value`.
+* If `source` is a comma-separated list of names, the entries are dropped when 
+the `value` matches the `source` values from extracted data, concatenated using 
+the `separator`.
 
 Whenever an entry is dropped, the metric `loki_process_dropped_lines_total`
 is incremented. By default, the reason label is `"drop_stage"`, but you can
@@ -371,6 +381,20 @@ following key-value pair to the set of extracted data.
 ```
 username: agent
 ```
+
+{{< admonition type="note" >}}
+Due to a limitation of the upstream jmespath library, you must wrap any string
+that contains a hyphen `-` in quotes so that it's not considered a numerical
+expression.
+	
+If you don't use quotes to wrap a string that contains a hyphen, you will get
+errors like: `Unexpected token at the end of the expression: tNumber`
+
+You can use one of two options to circumvent this issue:
+
+1. An escaped double quote. For example: `http_user_agent = "\"request_User-Agent\""`
+1. A backtick quote. For example: ``http_user_agent = `"request_User-Agent"` ``
+{{< /admonition >}}
 
 ### stage.label_drop block
 
@@ -552,10 +576,14 @@ The following arguments are supported:
 
 | Name                  | Type     | Description                                                                                           | Default         | Required |
 | --------------------- | -------- | ----------------------------------------------------------------------------------------------------- | --------------- | -------- |
-| `selector`            | `string` | The LogQL stream selector and filter expressions to use.                                              |                 | yes      |
+| `selector`            | `string` | The LogQL stream selector and line filter expressions to use.                                         |                 | yes      |
 | `pipeline_name`       | `string` | A custom name to use for the nested pipeline.                                                         | `""`            | no       |
 | `action`              | `string` | The action to take when the selector matches the log line. Supported values are `"keep"` and `"drop"` | `"keep"`        | no       |
 | `drop_counter_reason` | `string` | A custom reason to report for dropped lines.                                                          | `"match_stage"` | no       |
+
+{{< admonition type="note" >}}
+The filters do not include label filter expressions such as `| label == "foobar"`.
+{{< /admonition >}}
 
 The `stage.match` block supports a number of `stage.*` inner blocks, like the top-level
 block. These are used to construct the nested set of stages to run if the
@@ -1524,7 +1552,7 @@ The following arguments are supported:
 | ---------------- | ------------- | -------------------------------------------------- | ------- | -------- |
 | `db`             | `string`      | Path to the Maxmind DB file.                       |         | yes      |
 | `source`         | `string`      | IP from extracted data to parse.                   |         | yes      |
-| `db_type`        | `string`      | Maxmind DB type. Allowed values are "city", "asn". |         | no       |
+| `db_type`        | `string`      | Maxmind DB type. Allowed values are "city", "asn", "country". |         | no       |
 | `custom_lookups` | `map(string)` | Key-value pairs of JMESPath expressions.           |         | no       |
 
 
@@ -1548,6 +1576,7 @@ loki.process "example" {
 		values = {
 			geoip_city_name          = "",
 			geoip_country_name       = "",
+			geoip_country_code       = "",
 			geoip_continent_name     = "",
 			geoip_continent_code     = "",
 			geoip_location_latitude  = "",
@@ -1568,7 +1597,8 @@ The extracted data from the IP used in this example:
 
 - geoip_city_name: Kansas City
 - geoip_country_name: United States
-- geoip_continet_name: North America
+- geoip_country_code: US
+- geoip_continent_name: North America
 - geoip_continent_code: NA
 - geoip_location_latitude: 39.1027
 - geoip_location_longitude: -94.5778
@@ -1608,6 +1638,42 @@ The extracted data from the IP used in this example:
 - geoip_autonomous_system_number: 396982
 - geoip_autonomous_system_organization: GOOGLE-CLOUD-PLATFORM
 
+#### GeoIP with Country database example:
+
+```
+{"log":"log message","client_ip":"34.120.177.193"}
+
+loki.process "example" {
+	stage.json {
+		expressions = {ip = "client_ip"}
+	}
+
+	stage.geoip {
+		source  = "ip"
+		db      = "/path/to/db/GeoLite2-Country.mmdb"
+		db_type = "country"
+	}
+
+	stage.labels {
+		values = {
+			geoip_country_name       = "",
+			geoip_country_code       = "",
+			geoip_continent_name     = "",
+			geoip_continent_code     = "",
+		}
+	}
+}
+```
+
+The `json` stage extracts the IP address from the `client_ip` key in the log line. 
+Then the extracted `ip` value is given as source to geoip stage. The geoip stage performs a lookup on the IP and populates the following fields in the shared map which are added as labels using the `labels` stage.
+
+The extracted data from the IP used in this example:
+
+- geoip_country_name: United States
+- geoip_country_code: US
+- geoip_continent_name: North America
+- geoip_continent_code: NA
 
 #### GeoIP with custom fields example
 
@@ -1680,3 +1746,21 @@ loki.process "local" {
   }
 }
 ```
+<!-- START GENERATED COMPATIBLE COMPONENTS -->
+
+## Compatible components
+
+`loki.process` can accept arguments from the following components:
+
+- Components that export [Loki `LogsReceiver`]({{< relref "../compatibility/#loki-logsreceiver-exporters" >}})
+
+`loki.process` has exports that can be consumed by the following components:
+
+- Components that consume [Loki `LogsReceiver`]({{< relref "../compatibility/#loki-logsreceiver-consumers" >}})
+
+{{< admonition type="note" >}}
+Connecting some components may not be sensible or components may require further configuration to make the connection work correctly.
+Refer to the linked documentation for more details.
+{{< /admonition >}}
+
+<!-- END GENERATED COMPATIBLE COMPONENTS -->

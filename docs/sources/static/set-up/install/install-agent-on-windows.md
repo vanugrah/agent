@@ -2,10 +2,12 @@
 aliases:
 - ../../set-up/install-agent-on-windows/
 - ../set-up/install-agent-on-windows/
+- /docs/grafana-cloud/monitor-infrastructure/agent/static/set-up/install/install-agent-on-windows/
+- /docs/grafana-cloud/send-data/agent/static/set-up/install/install-agent-on-windows/
 canonical: https://grafana.com/docs/agent/latest/static/set-up/install/install-agent-on-windows/
+description: Learn how to install Grafana Agent in static mode on Windows
 menuTitle: Windows
 title: Install Grafana Agent in static mode on Windows
-description: Learn how to install Grafana Agent in static mode on Windows
 weight: 600
 ---
 
@@ -28,7 +30,11 @@ To do a standard graphical install of Grafana Agent on Windows, perform the foll
 1. Double-click on `grafana-agent-installer.exe` to install Grafana Agent.
 
    Grafana Agent is installed into the default directory `C:\Program Files\Grafana Agent`.
-   The [windows_exporter integration](/docs/agent/latest/static/configuration/integrations/windows-exporter-config) can be enabled with all default windows_exporter options.
+   
+   The following options are available:
+   
+   - The [windows_exporter integration][windows_exporter_config] can be enabled with all default windows_exporter options. 
+   - The [-config.expand-env][flags] command line flag can be enabled.
 
 ## Silent install
 
@@ -75,6 +81,24 @@ If you are using `remote_write` you must enable Windows Exporter and set the glo
    - `PASSWORD`: Your password
 
    If you are using Powershell, make sure you use triple quotes `"""http://example.com"""` around the URL parameter.
+
+## Silent install with `-config.expand_env`
+
+You can enable [-config.expand-env][flags] during a silent install.
+
+1. Navigate to the [latest release](https://github.com/grafana/agent/releases) on GitHub.
+
+1. Scroll down to the **Assets** section.
+
+1. Download the file called `grafana-agent-installer.exe.zip`.
+
+1. Unzip the downloaded file.
+
+1. Run the following command in PowerShell or Command Prompt:
+
+   ```shell
+   PATH_TO_INSTALLER/grafana-agent-installer.exe /S /ExpandEnv true
+   ```
 
 ## Verify the installation
 
@@ -144,8 +168,10 @@ Refer to [windows_events](/docs/loki/latest/clients/promtail/configuration/#wind
 - [Configure Grafana Agent][configure]
 
 {{% docs/reference %}}
-[start]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static/set-up/start-agent"
+[flags]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/flags"
+[windows_exporter_config]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/integrations/windows-exporter-config"
+[start]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/set-up/start-agent"
 [start]: "/docs/grafana-cloud/ -> ../start-agent"
-[configure]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static/configuration/create-config-file"
+[configure]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/create-config-file"
 [configure]: "/docs/grafana-cloud/ -> ../../configuration/create-config-file"
 {{% /docs/reference %}}

@@ -3,9 +3,10 @@ aliases:
 - /docs/grafana-cloud/agent/flow/reference/components/prometheus.exporter.snmp/
 - /docs/grafana-cloud/monitor-infrastructure/agent/flow/reference/components/prometheus.exporter.snmp/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/flow/reference/components/prometheus.exporter.snmp/
+- /docs/grafana-cloud/send-data/agent/flow/reference/components/prometheus.exporter.snmp/
 canonical: https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.exporter.snmp/
-title: prometheus.exporter.snmp
 description: Learn about prometheus.exporter.snmp
+title: prometheus.exporter.snmp
 ---
 
 # prometheus.exporter.snmp
@@ -13,9 +14,9 @@ description: Learn about prometheus.exporter.snmp
 The `prometheus.exporter.snmp` component embeds
 [`snmp_exporter`](https://github.com/prometheus/snmp_exporter). `snmp_exporter` lets you collect SNMP data and expose them as Prometheus metrics.
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 `prometheus.exporter.snmp` uses the latest configuration introduced in version 0.23 of the Prometheus `snmp_exporter`.
-{{% /admonition %}}
+{{< /admonition >}}
 
 ## Usage
 
@@ -39,7 +40,8 @@ Omitted fields take their default values.
 | `config_file` | `string`             | SNMP configuration file defining custom modules. |         | no       |
 | `config`      | `string` or `secret` | SNMP configuration as inline string.             |         | no       |
 
-The `config_file` argument points to a YAML file defining which snmp_exporter modules to use. See [snmp_exporter](https://github.com/prometheus/snmp_exporter#generating-configuration) for details on how to generate a config file.
+The `config_file` argument points to a YAML file defining which snmp_exporter modules to use.
+Refer to [snmp_exporter](https://github.com/prometheus/snmp_exporter#generating-configuration) for details on how to generate a configuration file.
 
 The `config` argument must be a YAML document as string defining which SNMP modules and auths to use.
 `config` is typically loaded by using the exports of another component. For example,
@@ -87,7 +89,7 @@ The `walk_param` block may be specified multiple times to define multiple SNMP c
 
 ## Exported fields
 
-{{< docs/shared lookup="flow/reference/components/exporter-component-exports.md" source="agent" version="<AGENT VERSION>" >}}
+{{< docs/shared lookup="flow/reference/components/exporter-component-exports.md" source="agent" version="<AGENT_VERSION>" >}}
 
 ## Component health
 
@@ -197,3 +199,18 @@ Replace the following:
 - `PASSWORD`: The password to use for authentication to the remote_write API.
 
 [scrape]: {{< relref "./prometheus.scrape.md" >}}
+
+<!-- START GENERATED COMPATIBLE COMPONENTS -->
+
+## Compatible components
+
+`prometheus.exporter.snmp` has exports that can be consumed by the following components:
+
+- Components that consume [Targets]({{< relref "../compatibility/#targets-consumers" >}})
+
+{{< admonition type="note" >}}
+Connecting some components may not be sensible or components may require further configuration to make the connection work correctly.
+Refer to the linked documentation for more details.
+{{< /admonition >}}
+
+<!-- END GENERATED COMPATIBLE COMPONENTS -->

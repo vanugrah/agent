@@ -1,12 +1,13 @@
 ---
 aliases:
-- /docs/agent/latest/flow/reference/components/loki.source.docker
+- /docs/agent/latest/flow/reference/components/loki.source.docker/
 - /docs/grafana-cloud/agent/flow/reference/components/loki.source.docker/
 - /docs/grafana-cloud/monitor-infrastructure/agent/flow/reference/components/loki.source.docker/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/flow/reference/components/loki.source.docker/
+- /docs/grafana-cloud/send-data/agent/flow/reference/components/loki.source.docker/
 canonical: https://grafana.com/docs/agent/latest/flow/reference/components/loki.source.docker/
-title: loki.source.docker
 description: Learn about loki.source.docker
+title: loki.source.docker
 ---
 
 # loki.source.docker
@@ -32,7 +33,7 @@ loki.source.docker "LABEL" {
 The component starts a new reader for each of the given `targets` and fans out
 log entries to the list of receivers passed in `forward_to`.
 
-`loki.source.file` supports the following arguments:
+`loki.source.docker` supports the following arguments:
 
 Name            | Type                 | Description          | Default | Required
 --------------- | -------------------- | -------------------- | ------- | --------
@@ -130,6 +131,14 @@ fully qualified name) to store its _positions file_. The positions file
 stores the read offsets so that if there is a component or Agent restart,
 `loki.source.docker` can pick up tailing from the same spot.
 
+If the target's argument contains multiple entries with the same container
+ID (for example as a result of `discovery.docker` picking up multiple exposed
+ports or networks), `loki.source.docker` will deduplicate them, and only keep
+the first of each container ID instances, based on the
+`__meta_docker_container_id` label.  As such, the Docker daemon is queried
+for each container ID only once, and only one target will be available in the
+component's debug info.
+
 ## Example
 
 This example collects log entries from the files specified in the `targets`
@@ -152,3 +161,20 @@ loki.write "local" {
   }
 }
 ```
+
+<!-- START GENERATED COMPATIBLE COMPONENTS -->
+
+## Compatible components
+
+`loki.source.docker` can accept arguments from the following components:
+
+- Components that export [Targets]({{< relref "../compatibility/#targets-exporters" >}})
+- Components that export [Loki `LogsReceiver`]({{< relref "../compatibility/#loki-logsreceiver-exporters" >}})
+
+
+{{< admonition type="note" >}}
+Connecting some components may not be sensible or components may require further configuration to make the connection work correctly.
+Refer to the linked documentation for more details.
+{{< /admonition >}}
+
+<!-- END GENERATED COMPATIBLE COMPONENTS -->

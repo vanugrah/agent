@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/prometheus/model/histogram"
 	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/model/metadata"
+	"github.com/prometheus/prometheus/model/value"
 	"github.com/prometheus/prometheus/storage"
 )
 
@@ -102,8 +103,18 @@ func (a *interceptappender) Append(ref storage.SeriesRef, l labels.Labels, t int
 		ref = storage.SeriesRef(a.ls.GetOrAddGlobalRefID(l))
 	}
 
+	if value.IsStaleNaN(v) {
+		a.ls.AddStaleMarker(uint64(ref), l)
+	} else {
+		// Tested this to ensure it had no cpu impact, since it is called so often.
+		a.ls.RemoveStaleMarker(uint64(ref))
+	}
+
 	if a.interceptor.onAppend != nil {
 		return a.interceptor.onAppend(ref, l, t, v, a.child)
+	}
+	if a.child == nil {
+		return 0, nil
 	}
 	return a.child.Append(ref, l, t, v)
 }
@@ -138,6 +149,9 @@ func (a *interceptappender) AppendExemplar(
 	if a.interceptor.onAppendExemplar != nil {
 		return a.interceptor.onAppendExemplar(ref, l, e, a.child)
 	}
+	if a.child == nil {
+		return 0, nil
+	}
 	return a.child.AppendExemplar(ref, l, e)
 }
 
@@ -154,6 +168,9 @@ func (a *interceptappender) UpdateMetadata(
 
 	if a.interceptor.onUpdateMetadata != nil {
 		return a.interceptor.onUpdateMetadata(ref, l, m, a.child)
+	}
+	if a.child == nil {
+		return 0, nil
 	}
 	return a.child.UpdateMetadata(ref, l, m)
 }
@@ -172,6 +189,9 @@ func (a *interceptappender) AppendHistogram(
 
 	if a.interceptor.onAppendHistogram != nil {
 		return a.interceptor.onAppendHistogram(ref, l, t, h, fh, a.child)
+	}
+	if a.child == nil {
+		return 0, nil
 	}
 	return a.child.AppendHistogram(ref, l, t, h, fh)
 }

@@ -3,9 +3,10 @@ aliases:
 - /docs/grafana-cloud/agent/flow/reference/components/prometheus.exporter.elasticsearch/
 - /docs/grafana-cloud/monitor-infrastructure/agent/flow/reference/components/prometheus.exporter.elasticsearch/
 - /docs/grafana-cloud/monitor-infrastructure/integrations/agent/flow/reference/components/prometheus.exporter.elasticsearch/
+- /docs/grafana-cloud/send-data/agent/flow/reference/components/prometheus.exporter.elasticsearch/
 canonical: https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.exporter.elasticsearch/
-title: prometheus.exporter.elasticsearch
 description: Learn about prometheus.exporter.elasticsearch
+title: prometheus.exporter.elasticsearch
 ---
 
 # prometheus.exporter.elasticsearch
@@ -14,10 +15,10 @@ The `prometheus.exporter.elasticsearch` component embeds
 [elasticsearch_exporter](https://github.com/prometheus-community/elasticsearch_exporter) for
 the collection of metrics from ElasticSearch servers.
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 Currently, an Agent can only collect metrics from a single ElasticSearch server.
 However, the exporter can collect the metrics from all nodes through that server configured.
-{{% /admonition %}}
+{{< /admonition >}}
 
 We strongly recommend that you configure a separate user for the Agent, and give it only the strictly mandatory
 security privileges necessary for monitoring your node, as per the [official documentation](https://github.com/prometheus-community/elasticsearch_exporter#elasticsearch-7x-security-privileges).
@@ -55,9 +56,24 @@ Omitted fields take their default values.
 | `data_streams`         | `bool`     | Export stats for Data Streams.                                                                         |                           | no       |
 | `slm`                  | `bool`     | Export stats for SLM (Snapshot Lifecycle Management).                                                  |                           | no       |
 
+## Blocks
+
+The following blocks are supported inside the definition of
+`prometheus.exporter.elasticsearch`:
+
+| Hierarchy           | Block             | Description                                              | Required |
+| ------------------- | ----------------- | -------------------------------------------------------- | -------- |
+| basic_auth          | [basic_auth][]    | Configure basic_auth for authenticating to the endpoint. | no       |
+
+[basic_auth]: #basic_auth-block
+
+### basic_auth block
+
+{{< docs/shared lookup="flow/reference/components/basic-auth-block.md" source="agent" version="<AGENT VERSION>" >}}
+
 ## Exported fields
 
-{{< docs/shared lookup="flow/reference/components/exporter-component-exports.md" source="agent" version="<AGENT VERSION>" >}}
+{{< docs/shared lookup="flow/reference/components/exporter-component-exports.md" source="agent" version="<AGENT_VERSION>" >}}
 
 ## Component health
 
@@ -83,6 +99,10 @@ from `prometheus.exporter.elasticsearch`:
 ```river
 prometheus.exporter.elasticsearch "example" {
   address = "http://localhost:9200"
+  basic_auth {
+    username = USERNAME
+    password = PASSWORD
+  }
 }
 
 // Configure a prometheus.scrape component to collect Elasticsearch metrics.
@@ -110,3 +130,18 @@ Replace the following:
 - `PASSWORD`: The password to use for authentication to the remote_write API.
 
 [scrape]: {{< relref "./prometheus.scrape.md" >}}
+
+<!-- START GENERATED COMPATIBLE COMPONENTS -->
+
+## Compatible components
+
+`prometheus.exporter.elasticsearch` has exports that can be consumed by the following components:
+
+- Components that consume [Targets]({{< relref "../compatibility/#targets-consumers" >}})
+
+{{< admonition type="note" >}}
+Connecting some components may not be sensible or components may require further configuration to make the connection work correctly.
+Refer to the linked documentation for more details.
+{{< /admonition >}}
+
+<!-- END GENERATED COMPATIBLE COMPONENTS -->

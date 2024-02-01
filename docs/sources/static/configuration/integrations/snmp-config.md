@@ -1,9 +1,11 @@
 ---
 aliases:
 - ../../../configuration/integrations/snmp-config/
+- /docs/grafana-cloud/monitor-infrastructure/agent/static/configuration/integrations/snmp-config/
+- /docs/grafana-cloud/send-data/agent/static/configuration/integrations/snmp-config/
 canonical: https://grafana.com/docs/agent/latest/static/configuration/integrations/snmp-config/
-title: snmp config
 description: Learn about snmp config
+title: snmp config
 ---
 
 # snmp config
@@ -12,9 +14,9 @@ The `snmp` block configures the `snmp` integration,
 which is an embedded version of
 [`snmp_exporter`](https://github.com/prometheus/snmp_exporter). This allows collection of SNMP metrics from the network devices with ease.
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 `snmp config` uses the latest configuration introduced in version 0.23 of the Prometheus `snmp_exporter`.
-{{% /admonition %}}
+{{< /admonition >}}
 
 ## Quick configuration example
 

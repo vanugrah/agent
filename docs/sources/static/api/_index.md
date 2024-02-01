@@ -1,10 +1,12 @@
 ---
 aliases:
 - ../api/
+- /docs/grafana-cloud/monitor-infrastructure/agent/static/api/
+- /docs/grafana-cloud/send-data/agent/static/api/
 canonical: https://grafana.com/docs/agent/latest/static/api/
-title: Static mode APIs (Stable)
-menuTitle: Static mode API
 description: Learn about the Grafana Agent static mode API
+menuTitle: Static mode API
+title: Static mode APIs (Stable)
 weight: 400
 ---
 
@@ -23,10 +25,10 @@ API endpoints are stable unless otherwise noted.
 
 Grafana Agent exposes a config management REST API for managing instance configurations when it is running in [scraping service mode][scrape].
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 The scraping service mode is a requirement for the config management
 API, however this is not a prerequisite for the Agent API or Ready/Healthy API.
-{{% /admonition %}}
+{{< /admonition >}}
 
 The following endpoints are exposed:
 
@@ -125,13 +127,13 @@ defined in the Configuration Reference. The name field of the configuration is
 ignored and the name in the URL takes precedence. The request body must be
 formatted as YAML.
 
-{{% admonition type="warning" %}}
+{{< admonition type="warning" >}}
 By default, all instance configuration files that read
 credentials from a file on disk will be rejected. This prevents malicious users
 from reading the contents of arbitrary files as passwords and sending their
 contents to fake remote_write endpoints. To change the behavior, set
 `dangerous_allow_reading_files` to true in the `scraping_service` block.
-{{% /admonition %}}
+{{< /admonition >}}
 
 Status code: 201 with a new config, 200 on updated config.
 Response on success:
@@ -172,9 +174,9 @@ Response on success:
 GET /agent/api/v1/metrics/instances
 ```
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 The deprecated alias is `/agent/api/v1/instances`
-{{% /admonition %}}
+{{< /admonition >}}
 
 Status code: 200 on success.
 Response on success:
@@ -194,9 +196,9 @@ Response on success:
 GET /agent/api/v1/metrics/targets
 ```
 
-{{% admonition type="note" %}}
+{{< admonition type="note" >}}
 The deprecated alias is `/agent/api/v1/targets`
-{{% /admonition %}}
+{{< /admonition >}}
 
 This endpoint collects all metrics subsystem targets known to the Agent across all
 running instances. Only targets being scraped from the local Agent will be returned. If
@@ -520,10 +522,10 @@ Agent is Healthy.
 ```
 
 {{% docs/reference %}}
-[scrape]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static/configuration/scraping-service"
+[scrape]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/scraping-service"
 [scrape]: "/docs/grafana-cloud/ -> ../configuration/scraping-service
-[metrics]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static/configuration/metrics-config"
+[metrics]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/metrics-config"
 [metrics]: "/docs/grafana-cloud/ -> ../configuration/metrics-config"
-[integrations]: "/docs/agent/ -> /docs/agent/<AGENT VERSION>/static/configuration/integrations/integrations-next"
+[integrations]: "/docs/agent/ -> /docs/agent/<AGENT_VERSION>/static/configuration/integrations/integrations-next"
 [integrations]: "/docs/grafana-cloud/ -> ../configuration/integrations/integrations-next"
 {{% /docs/reference %}}
