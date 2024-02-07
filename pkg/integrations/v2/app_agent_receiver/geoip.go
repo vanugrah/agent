@@ -108,27 +108,26 @@ func (gp *GeoIP2) getGeoIPData(sourceIP net.IP) (*geoip2.City, error) {
 	gp.metrics.requests.WithLabelValues("MaxMind").Inc()
 
 	// Validate record has appropriate data
-	country, ok := record.Country.Names["en"]
+	_, ok := record.Country.Names["en"]
 	if !ok {
 		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for country")
 	}
 
-	city, ok := record.City.Names["en"]
+	_, ok = record.City.Names["en"]
 	if !ok {
 		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for city")
 	}
 
-	continent, ok := record.Continent.Names["en"]
+	_, ok = record.Continent.Names["en"]
 	if !ok {
 		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for continent")
 	}
 
-	subdivisionName, subdivisionCode := "", ""
 	if len(record.Subdivisions) > 0 {
-		subdivisionName, ok = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
+		_, ok = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
 		if !ok {
 			gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 			return nil, fmt.Errorf("no English name for subdivision")
@@ -142,12 +141,12 @@ func (gp *GeoIP2) getGeoIPData(sourceIP net.IP) (*geoip2.City, error) {
 // This method assumes that the record has been validated and is not nil.
 func mapGeoIP2CityToMetas(mt *Meta, record *geoip2.City, clientIP net.IP) (*Meta, error) {
 
-	country, ok := record.Country.Names["en"]
-	city, ok := record.City.Names["en"]
-	continent, ok := record.Continent.Names["en"]
+	country, _ := record.Country.Names["en"]
+	city, _ := record.City.Names["en"]
+	continent, _ := record.Continent.Names["en"]
 	subdivisionName, subdivisionCode := "", ""
 	if len(record.Subdivisions) > 0 {
-		subdivisionName, ok = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
+		subdivisionName, _ = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
 		subdivisionCode = record.Subdivisions[0].IsoCode
 	}
 
