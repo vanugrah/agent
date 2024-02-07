@@ -3,6 +3,7 @@ package app_agent_receiver
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -22,9 +23,16 @@ type GeoIPProvider interface {
 
 // GeoIPProvider is a wrapper for the MaxMind geoip2.Reader
 type GeoIP2 struct {
-	logger log.Logger
-	db     *geoip2.Reader
-	cfgs   *GeoIPConfig
+	logger  log.Logger
+	db      *geoip2.Reader
+	cfgs    *GeoIPConfig
+	metrics *geoipMetrics
+}
+
+type geoipMetrics struct {
+	requests        *prometheus.CounterVec
+	errors          *prometheus.CounterVec
+	requestDuration *prometheus.SummaryVec
 }
 
 // NewGeoIPProvider creates an instance of GeoIPProvider.
@@ -44,10 +52,29 @@ func NewGeoIPProvider(l log.Logger, config GeoIPConfig, reg prometheus.Registere
 		}
 	}
 
+	// instantiate and register metrics
+	metrics := &geoipMetrics{
+		requests: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "app_agent_receiver_geoip_requests_total",
+			Help: "Total number of requests to the GeoIP database",
+		}, []string{"geoip_provider"}),
+		errors: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "app_agent_receiver_geoip_errors_total",
+			Help: "Total number of errors from GeoIP database",
+		}, []string{"geoip_provider"}),
+		requestDuration: prometheus.NewSummaryVec(prometheus.SummaryOpts{
+			Name:       "app_agent_receiver_geoip_request_duration_seconds",
+			Help:       "The duration of the requests to the GeoIP database",
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		}, []string{"geoip_provider"}),
+	}
+	reg.MustRegister(metrics.requests, metrics.errors, metrics.requestDuration)
+
 	return &GeoIP2{
-		logger: l,
-		db:     db,
-		cfgs:   &config,
+		logger:  l,
+		db:      db,
+		cfgs:    &config,
+		metrics: metrics,
 	}
 }
 
@@ -68,10 +95,17 @@ func validateGeoIPConfig(c *GeoIPConfig) error {
 // getGeoIPData will query the geoip2 database for the given IP address and return the geoip2.City record.
 func (gp *GeoIP2) getGeoIPData(sourceIP net.IP) (*geoip2.City, error) {
 
+	start := time.Now()
 	record, err := gp.db.City(sourceIP)
+	elapsed := time.Since(start).Seconds()
+
+	gp.metrics.requestDuration.WithLabelValues("MaxMind").Observe(elapsed)
+
 	if err != nil {
+		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, err
 	}
+	gp.metrics.requests.WithLabelValues("MaxMind").Inc()
 
 	return record, nil
 }
