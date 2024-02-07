@@ -107,23 +107,22 @@ func (gp *GeoIP2) getGeoIPData(sourceIP net.IP) (*geoip2.City, error) {
 	}
 	gp.metrics.requests.WithLabelValues("MaxMind").Inc()
 
-	return record, nil
-}
-
-// mapGeoIP2CityToMetas will map the geoip2.City record to the app_agent_receiver.Metas.GeoIP struct.
-func mapGeoIP2CityToMetas(mt *Meta, record *geoip2.City, clientIP net.IP) (*Meta, error) {
+	// Validate record has appropriate data
 	country, ok := record.Country.Names["en"]
 	if !ok {
+		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for country")
 	}
 
 	city, ok := record.City.Names["en"]
 	if !ok {
+		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for city")
 	}
 
 	continent, ok := record.Continent.Names["en"]
 	if !ok {
+		gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 		return nil, fmt.Errorf("no English name for continent")
 	}
 
@@ -131,13 +130,29 @@ func mapGeoIP2CityToMetas(mt *Meta, record *geoip2.City, clientIP net.IP) (*Meta
 	if len(record.Subdivisions) > 0 {
 		subdivisionName, ok = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
 		if !ok {
+			gp.metrics.errors.WithLabelValues("MaxMind").Inc()
 			return nil, fmt.Errorf("no English name for subdivision")
 		}
+	}
+
+	return record, nil
+}
+
+// mapGeoIP2CityToMetas will map the geoip2.City record to the app_agent_receiver.Metas.GeoIP struct.
+// This method assumes that the record has been validated and is not nil.
+func mapGeoIP2CityToMetas(mt *Meta, record *geoip2.City, clientIP net.IP) (*Meta, error) {
+
+	country, ok := record.Country.Names["en"]
+	city, ok := record.City.Names["en"]
+	continent, ok := record.Continent.Names["en"]
+	subdivisionName, subdivisionCode := "", ""
+	if len(record.Subdivisions) > 0 {
+		subdivisionName, ok = record.Subdivisions[0].Names["en"] // TODO: Copilot generated first. Example has last index.
 		subdivisionCode = record.Subdivisions[0].IsoCode
 	}
 
 	mt.Geo = Geo{
-		ClientIP:        clientIP, // Set this value from the client's IP
+		ClientIP:        clientIP,
 		LocationLat:     record.Location.Latitude,
 		LocationLong:    record.Location.Longitude,
 		CityName:        city,
@@ -153,6 +168,14 @@ func mapGeoIP2CityToMetas(mt *Meta, record *geoip2.City, clientIP net.IP) (*Meta
 	return mt, nil
 }
 
+func isValidIP(ip net.IP) bool {
+	// net.IP is a slice of bytes. The length of the slice is the number of bytes in the IP address.
+	// for IPV4 the length is 4 and for IPV6 the length is 16.
+	private10 := ip[0] == 10  // private IP
+	localhost := ip[0] == 127 // localhost
+	return !private10 && !localhost
+}
+
 // TransformException will attempt to populate the metas with geo IP data. If the geo IP data is not available, the
 // metas will be returned as is.
 func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
@@ -161,7 +184,11 @@ func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
 		return mt
 	}
 
-	// TODO Validate IP is in the correct format. For example ::1, or 10.x.x.x ips.
+	// Validate IP is in the correct format. For example ignore ::1, or 10.x.x.x ips.
+	if !isValidIP(clientIP) {
+		level.Warn(gp.logger).Log("msg", "Client IP is not a valid public IP")
+		return mt
+	}
 	level.Info(gp.logger).Log("msg", "original client ip was", "client_ip", clientIP.String())
 
 	// Query GeoIP db
