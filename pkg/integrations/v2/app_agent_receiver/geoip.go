@@ -40,7 +40,8 @@ func NewGeoIPProvider(l log.Logger, config GeoIPConfig, reg prometheus.Registere
 
 	err := validateGeoIPConfig(&config)
 	if err != nil {
-		panic(err) //TODO Is panicing the correct way to handle this?
+		level.Error(l).Log("msg", "Invalid geoip config")
+		panic(err)
 	}
 
 	var db *geoip2.Reader
@@ -48,7 +49,8 @@ func NewGeoIPProvider(l log.Logger, config GeoIPConfig, reg prometheus.Registere
 	if config.Enabled {
 		db, err = geoip2.Open(config.DB)
 		if err != nil {
-			panic(err) //TODO Is panicing the correct way to handle this?
+			level.Error(l).Log("msg", "Failed to connect to geoip database")
+			panic(err)
 		}
 	}
 
@@ -179,16 +181,15 @@ func isValidIP(ip net.IP) bool {
 // metas will be returned as is.
 func (gp *GeoIP2) TransformMetas(mt *Meta, clientIP net.IP) *Meta {
 	if clientIP == nil {
-		level.Warn(gp.logger).Log("msg", "Client IP is nil")
+		level.Warn(gp.logger).Log("msg", "Client IP is nil - cannot transform metas with geoip data")
 		return mt
 	}
 
 	// Validate IP is in the correct format. For example ignore ::1, or 10.x.x.x ips.
 	if !isValidIP(clientIP) {
-		level.Warn(gp.logger).Log("msg", "Client IP is not a valid public IP")
+		level.Warn(gp.logger).Log("msg", "Client IP is not a valid public IP. Cannot transform metas with geoip data")
 		return mt
 	}
-	level.Info(gp.logger).Log("msg", "original client ip was", "client_ip", clientIP.String())
 
 	// Query GeoIP db
 	geoIpCityRecord, err := gp.getGeoIPData(clientIP)
