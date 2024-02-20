@@ -2,6 +2,7 @@ package app_agent_receiver
 
 import (
 	"fmt"
+	"net"
 	"sort"
 	"strconv"
 	"strings"
@@ -226,6 +227,7 @@ func (m Measurement) KeyVal() *KeyVal {
 
 	KeyValAdd(kv, "timestamp", m.Timestamp.String())
 	KeyValAdd(kv, "kind", "measurement")
+	KeyValAdd(kv, "type", m.Type)
 
 	keys := make([]string, 0, len(m.Values))
 	for k := range m.Values {
@@ -303,6 +305,7 @@ type Meta struct {
 	Page    Page    `json:"page,omitempty"`
 	Browser Browser `json:"browser,omitempty"`
 	View    View    `json:"view,omitempty"`
+	Geo     Geo     `json:"geo,omitempty"`
 }
 
 // KeyVal produces key->value representation of the app event metadata
@@ -315,6 +318,7 @@ func (m Meta) KeyVal() *KeyVal {
 	MergeKeyValWithPrefix(kv, m.Page.KeyVal(), "page_")
 	MergeKeyValWithPrefix(kv, m.Browser.KeyVal(), "browser_")
 	MergeKeyValWithPrefix(kv, m.View.KeyVal(), "view_")
+	MergeKeyValWithPrefix(kv, m.Geo.KeyVal(), "geo_")
 	return kv
 }
 
@@ -415,5 +419,37 @@ type View struct {
 func (v View) KeyVal() *KeyVal {
 	kv := NewKeyVal()
 	KeyValAdd(kv, "name", v.Name)
+	return kv
+}
+
+// Geo holds metadata about geolocation of incoming requests
+// TODO: Create placeholder for all geolocation fields
+type Geo struct {
+	ClientIP        net.IP  `json:"client_ip,omitempty"`
+	LocationLat     float64 `json:"location_latitude,omitempty"`
+	LocationLong    float64 `json:"location_longitude,omitempty"`
+	CityName        string  `json:"city_name,omitempty"`
+	CountryName     string  `json:"country_name,omitempty"`
+	ContinentName   string  `json:"continent_name,omitempty"`
+	ContinentCode   string  `json:"continent_code,omitempty"`
+	PostalCode      string  `json:"postal_code,omitempty"`
+	Timezone        string  `json:"timezone,omitempty"`
+	SubdivisionName string  `json:"subdivision_name,omitempty"`
+	SubdivisionCode string  `json:"subdivision_code,omitempty"`
+}
+
+func (v Geo) KeyVal() *KeyVal {
+	kv := NewKeyVal()
+	KeyValAdd(kv, "client_ip", v.ClientIP.String())
+	KeyValAdd(kv, "location_latitude", fmt.Sprintf("%f", v.LocationLat))
+	KeyValAdd(kv, "location_longitude", fmt.Sprintf("%f", v.LocationLong))
+	KeyValAdd(kv, "city_name", v.CityName)
+	KeyValAdd(kv, "country_name", v.CountryName)
+	KeyValAdd(kv, "continent_name", v.ContinentName)
+	KeyValAdd(kv, "continent_code", v.ContinentCode)
+	KeyValAdd(kv, "postal_code", v.PostalCode)
+	KeyValAdd(kv, "timezone", v.Timezone)
+	KeyValAdd(kv, "subdivision_name", v.SubdivisionName)
+	KeyValAdd(kv, "subdivision_code", v.SubdivisionCode)
 	return kv
 }
