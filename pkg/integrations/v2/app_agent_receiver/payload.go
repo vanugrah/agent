@@ -227,6 +227,7 @@ func (m Measurement) KeyVal() *KeyVal {
 
 	KeyValAdd(kv, "timestamp", m.Timestamp.String())
 	KeyValAdd(kv, "kind", "measurement")
+	KeyValAdd(kv, "type", m.Type)
 
 	keys := make([]string, 0, len(m.Values))
 	for k := range m.Values {

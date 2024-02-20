@@ -248,11 +248,16 @@ func (f *Flow) Run(ctx context.Context) {
 			var (
 				components = f.loader.Components()
 				services   = f.loader.Services()
+				imports    = f.loader.Imports()
 
-				runnables = make([]controller.RunnableNode, 0, len(components)+len(services))
+				runnables = make([]controller.RunnableNode, 0, len(components)+len(services)+len(imports))
 			)
 			for _, c := range components {
 				runnables = append(runnables, c)
+			}
+
+			for _, i := range imports {
+				runnables = append(runnables, i)
 			}
 
 			// Only the root controller should run services, since modules share the
@@ -277,11 +282,25 @@ func (f *Flow) Run(ctx context.Context) {
 //
 // The controller will only start running components after Load is called once
 // without any configuration errors.
+// LoadSource uses default loader configuration.
 func (f *Flow) LoadSource(source *Source, args map[string]any) error {
+	return f.loadSource(source, args, nil)
+}
+
+// Same as above but with a customComponentRegistry that provides custom component definitions.
+func (f *Flow) loadSource(source *Source, args map[string]any, customComponentRegistry *controller.CustomComponentRegistry) error {
 	f.loadMut.Lock()
 	defer f.loadMut.Unlock()
 
-	diags := f.loader.Apply(args, source.components, source.configBlocks)
+	applyOptions := controller.ApplyOptions{
+		Args:                    args,
+		ComponentBlocks:         source.components,
+		ConfigBlocks:            source.configBlocks,
+		DeclareBlocks:           source.declareBlocks,
+		CustomComponentRegistry: customComponentRegistry,
+	}
+
+	diags := f.loader.Apply(applyOptions)
 	if !f.loadedOnce.Load() && diags.HasErrors() {
 		// The first call to Load should not run any components if there were
 		// errors in the configuration file.
